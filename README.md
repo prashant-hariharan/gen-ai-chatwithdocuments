@@ -1,5 +1,6 @@
 # Generative AI - Chat with your document and Website
 
+Blog: https://prashant-hariharan.blogspot.com/2024/09/generative-ai-chat-with-your-documents.html
 ## Step-00:  Pre-requisites
 
 - create accounts for Cohere and Mongodb atlas as described Pre-requistes section in:
