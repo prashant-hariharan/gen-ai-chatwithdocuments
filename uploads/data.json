@@ -1,0 +1,32 @@
+[
+
+{
+
+
+    "id": 1,
+    "name": "John Doe",
+    "vegetarian": false,
+    "birthDate": "1985-06-02",
+    "postalCode": "12345"
+  },
+
+  {
+
+
+    "id": 2,
+    "name": " Steven Dora",
+    "vegetarian": false,
+    "birthDate": "1987-07-02",
+    "postalCode": "12345"
+  },
+
+  {
+
+
+    "id": 3,
+    "name": " Ralph Raginick",
+    "vegetarian": true,
+    "birthDate": "1987-07-02",
+    "postalCode": "77777"
+  }
+]

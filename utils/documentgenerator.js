@@ -1,4 +1,5 @@
 const { PDFLoader } = require('@langchain/community/document_loaders/fs/pdf');
+const { JSONLoader } = require('langchain/document_loaders/fs/json');
 const { RecursiveCharacterTextSplitter } = require('langchain/text_splitter');
 const {
   CheerioWebBaseLoader,
@@ -42,6 +43,16 @@ async function splitWebsiteDetails(website) {
   const newDocuments = await sequence.invoke(docs);
 
   return newDocuments;
+}
+
+async function splitJson(filename) {
+  const filePath = `./uploads/${filename}`;
+  const loader = new JSONLoader(filePath);
+  const jsonDoc = await loader.load();
+  
+ 
+  console.log('Json  File Split',jsonDoc);
+  return jsonDoc;
 }
 
 async function generateSummary(docs,cohereAPIKey){
@@ -111,4 +122,4 @@ console.log(summary);
 return summary;
 }
 
-module.exports = { splitPDF, splitWebsiteDetails ,generateSummary};
+module.exports = { splitPDF, splitWebsiteDetails ,generateSummary,splitJson};

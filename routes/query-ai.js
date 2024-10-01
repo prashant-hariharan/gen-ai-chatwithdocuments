@@ -39,7 +39,7 @@ const mongoUrl = process.env.MONGO_CONNECTION_STRING;
  *               query:
  *                 type: string
  *                 description: Query to be asked to the AI Model
- *                 example: What is the cost of BBQ Chicken
+ *                 example: Cost of Vegetarian Sandwich?
  *               source:
  *                 type: string
  *                 description: Source of the AI Model.
@@ -100,7 +100,7 @@ routerQuery.post('/prompt', async (req, res) => {
  *               source:
  *                 type: string
  *                 description: Source of the AI Model.
- *                 example: ./uploads/lunch-1723456221030.pdf
+ *                 example: ./uploads/lunch-1724250225650.pdf
  *               chatHistoryId:
  *                 type: ObjectId
  *                 description: Chat history id if present, else new will be created

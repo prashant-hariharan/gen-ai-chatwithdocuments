@@ -4,10 +4,11 @@ const fs = require('fs');
 const path = require('path');
 
 const multer = require('multer');
+const { promisify } = require('util');
 
 const { generateAndSaveVectorEmbeddings } = require('../utils/mongogutils');
 
-const { splitPDF, splitWebsiteDetails } = require('../utils/documentgenerator');
+const { splitPDF, splitWebsiteDetails, splitJson } = require('../utils/documentgenerator');
 
 const cohereAPIKey = process.env.COHERE_API_KEY;
 const mongoUrl = process.env.MONGO_CONNECTION_STRING;
@@ -159,5 +160,76 @@ routerTrain.post('/train-using-website', async (req, res) => {
     res.status(500).send('Error processing PDF');
   }
 });
+
+// Train using json
+/**
+ * @swagger
+ * /api/train/train-using-json:
+ *   post:
+ *     summary: Provide a website to train the AI Model
+ *     tags: [train-model]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               
+ *
+ *     description: Train the AI Model using Json
+ *     responses:
+ *       200:
+ *         description: AI Model trained successfully using Json
+ */
+routerTrain.post('/train-using-json', async (req, res) => {
+  try {
+    console.log('Train using json');
+    const json = req.body;
+
+    const timestamp = Date.now();
+  const filename = `data-${timestamp}.json`;
+  const filePath = path.join(uploadDir, filename);
+
+  const jsonAsString = JSON.stringify(json);
+
+  const writeFile = promisify(fs.writeFile);
+
+  await writeFile(filePath,jsonAsString);
+  console.log('temp file created '+ filePath);
+
+
+    //1. Load Website and split the data of provided website
+    const docs = await splitJson( filename);
+    //console.log('Json  File Unsplit',docs);
+   
+
+    //2. Creating vector embeddings  for Mongodb atlas using cohere
+    console.log('Generating and saving vector embeddings');
+    await generateAndSaveVectorEmbeddings(
+      mongoUrl,
+      docs,
+      cohereAPIKey,
+      'vector_index'
+    );
+
+     fs.unlink(filePath, err=> {
+      if(err) {
+        console.log('File deletion error ', err);
+      }
+     
+    });
+
+
+
+    
+    res.json({ success: true, data: json });
+  } catch (error) {
+    console.error('Error processing Json:', error);
+    res.status(500).send('Error processing Json');
+  }
+});
+
+
 
 module.exports = routerTrain;
