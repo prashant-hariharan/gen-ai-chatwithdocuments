@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
-const { rateLimit } = require("express-rate-limit");
+const { rateLimit } = require('express-rate-limit');
 
 const port = process.env.PORT || 5000;
 
@@ -21,7 +21,6 @@ const limiterTrainandSummaryAPI = rateLimit({
   limit: 2, // each IP can make up to 2 requests per `windowsMs` (1 minutes)
   standardHeaders: true, // add the `RateLimit-*` headers to the response
   legacyHeaders: false, // remove the `X-RateLimit-*` headers from the response
-  
 });
 
 // Body parser middleware
@@ -51,14 +50,14 @@ const queryAiRoute = require('./routes/query-ai');
 const summaryAiRoute = require('./routes/summarize-ai');
 const sourcesRoute = require('./routes/sources');
 
-
-app.use('/api/train',limiterTrainandSummaryAPI, trainAiRoute);
-app.use('/api/query', limiterQueryApi,queryAiRoute);
-app.use('/api/summarize',limiterTrainandSummaryAPI, summaryAiRoute);
+app.use('/api/train', limiterTrainandSummaryAPI, trainAiRoute);
+app.use('/api/query', limiterQueryApi, queryAiRoute);
+app.use('/api/summarize', limiterTrainandSummaryAPI, summaryAiRoute);
 app.use('/api/sources', sourcesRoute);
 
-
-const server = app.listen(port, () => console.log(`Server listening on port ${port}`));
+const server = app.listen(port, () =>
+  console.log(`Server listening on port ${port}`)
+);
 server.timeout = 60000;
 //app.all('*', authenticationRequired); // Require authentication for all routes
 

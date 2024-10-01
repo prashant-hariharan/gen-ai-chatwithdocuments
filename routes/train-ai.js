@@ -8,7 +8,11 @@ const { promisify } = require('util');
 
 const { generateAndSaveVectorEmbeddings } = require('../utils/mongogutils');
 
-const { splitPDF, splitWebsiteDetails, splitJson } = require('../utils/documentgenerator');
+const {
+  splitPDF,
+  splitWebsiteDetails,
+  splitJson,
+} = require('../utils/documentgenerator');
 
 const cohereAPIKey = process.env.COHERE_API_KEY;
 const mongoUrl = process.env.MONGO_CONNECTION_STRING;
@@ -85,7 +89,7 @@ routerTrain.post('/train-using-pdf', upload.single('pdf'), async (req, res) => {
 
     //1.  Loading & Splitting PDF
     const fileToBeLoaded = `./uploads/${filename}`;
-    const docs = await splitPDF(fileToBeLoaded,200,20);
+    const docs = await splitPDF(fileToBeLoaded, 200, 20);
 
     //2. Creating vector embeddings  for Mongodb atlas using cohere
     console.log('Generating and saving vector embeddings');
@@ -97,11 +101,10 @@ routerTrain.post('/train-using-pdf', upload.single('pdf'), async (req, res) => {
       'vector_index'
     );
 
-    await fs.unlink(fileToBeLoaded, err=> {
-      if(err) {
+    await fs.unlink(fileToBeLoaded, (err) => {
+      if (err) {
         console.log('File deletion error ', err);
       }
-     
     });
     //3. Returning uploaded file details
     res.json({ success: true, data: file });
@@ -175,7 +178,7 @@ routerTrain.post('/train-using-website', async (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               
+ *
  *
  *     description: Train the AI Model using Json
  *     responses:
@@ -188,21 +191,19 @@ routerTrain.post('/train-using-json', async (req, res) => {
     const json = req.body;
 
     const timestamp = Date.now();
-  const filename = `data-${timestamp}.json`;
-  const filePath = path.join(uploadDir, filename);
+    const filename = `data-${timestamp}.json`;
+    const filePath = path.join(uploadDir, filename);
 
-  const jsonAsString = JSON.stringify(json);
+    const jsonAsString = JSON.stringify(json);
 
-  const writeFile = promisify(fs.writeFile);
+    const writeFile = promisify(fs.writeFile);
 
-  await writeFile(filePath,jsonAsString);
-  console.log('temp file created '+ filePath);
-
+    await writeFile(filePath, jsonAsString);
+    console.log('temp file created ' + filePath);
 
     //1. Load Website and split the data of provided website
-    const docs = await splitJson( filename);
+    const docs = await splitJson(filename);
     //console.log('Json  File Unsplit',docs);
-   
 
     //2. Creating vector embeddings  for Mongodb atlas using cohere
     console.log('Generating and saving vector embeddings');
@@ -213,23 +214,17 @@ routerTrain.post('/train-using-json', async (req, res) => {
       'vector_index'
     );
 
-     fs.unlink(filePath, err=> {
-      if(err) {
+    fs.unlink(filePath, (err) => {
+      if (err) {
         console.log('File deletion error ', err);
       }
-     
     });
 
-
-
-    
     res.json({ success: true, data: json });
   } catch (error) {
     console.error('Error processing Json:', error);
     res.status(500).send('Error processing Json');
   }
 });
-
-
 
 module.exports = routerTrain;

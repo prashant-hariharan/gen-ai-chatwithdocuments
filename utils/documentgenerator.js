@@ -7,11 +7,11 @@ const {
 const {
   HtmlToTextTransformer,
 } = require('@langchain/community/document_transformers/html_to_text');
-const{ Cohere} = require('@langchain/cohere');
+const { Cohere } = require('@langchain/cohere');
 const { PromptTemplate } = require('@langchain/core/prompts');
-const { loadSummarizationChain } = require("langchain/chains");
+const { loadSummarizationChain } = require('langchain/chains');
 
-async function splitPDF(fileToBeLoaded,chunkSize,overlap) {
+async function splitPDF(fileToBeLoaded, chunkSize, overlap) {
   console.log('Loading PDF File');
   console.log(' File to be loaded/ split: ' + fileToBeLoaded);
   const loader = new PDFLoader(fileToBeLoaded);
@@ -49,25 +49,24 @@ async function splitJson(filename) {
   const filePath = `./uploads/${filename}`;
   const loader = new JSONLoader(filePath);
   const jsonDoc = await loader.load();
-  
- 
-  console.log('Json  File Split',jsonDoc);
+
+  console.log('Json  File Split', jsonDoc);
   return jsonDoc;
 }
 
-async function generateSummary(docs,cohereAPIKey){
+async function generateSummary(docs, cohereAPIKey) {
   const modelCohere = new Cohere({
     maxTokens: 1000,
     apiKey: cohereAPIKey, // In Node.js defaults to process.env.COHERE_API_KEY
   });
-/*
+  /*
 const llmSummary = new ChatAnthropic({
   model: "claude-3-sonnet-20240229",
   temperature: 0.3,
 });
 */
 
-const summaryTemplate = `
+  const summaryTemplate = `
 You are an expert in summarizing pdf documents.
 Your goal is to create a summary of pdf document.
 Below you find data in the pdf:
@@ -83,9 +82,9 @@ Total output will be a summary of the data in pdf and a list of example question
 SUMMARY AND QUESTIONS:
 `;
 
-const SUMMARY_PROMPT = PromptTemplate.fromTemplate(summaryTemplate);
+  const SUMMARY_PROMPT = PromptTemplate.fromTemplate(summaryTemplate);
 
-const summaryRefineTemplate = `
+  const summaryRefineTemplate = `
 You are an expert in summarizing PDF documents.
 Your goal is to create a summary of a PDF.
 We have provided an existing summary up to a certain point: {existing_answer}
@@ -105,21 +104,21 @@ Total output will be a summary of the pdf and a list of example questions the us
 SUMMARY AND QUESTIONS:
 `;
 
-const SUMMARY_REFINE_PROMPT = PromptTemplate.fromTemplate(
-  summaryRefineTemplate
-);
+  const SUMMARY_REFINE_PROMPT = PromptTemplate.fromTemplate(
+    summaryRefineTemplate
+  );
 
-const summarizeChain = loadSummarizationChain(modelCohere, {
-  type: "refine",
-  verbose: false,
-  questionPrompt: SUMMARY_PROMPT,
-  refinePrompt: SUMMARY_REFINE_PROMPT,
-});
+  const summarizeChain = loadSummarizationChain(modelCohere, {
+    type: 'refine',
+    verbose: false,
+    questionPrompt: SUMMARY_PROMPT,
+    refinePrompt: SUMMARY_REFINE_PROMPT,
+  });
 
-const summary = await summarizeChain.run(docs);
+  const summary = await summarizeChain.run(docs);
 
-console.log(summary);
-return summary;
+  console.log(summary);
+  return summary;
 }
 
-module.exports = { splitPDF, splitWebsiteDetails ,generateSummary,splitJson};
+module.exports = { splitPDF, splitWebsiteDetails, generateSummary, splitJson };

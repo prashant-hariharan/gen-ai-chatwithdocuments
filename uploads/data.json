@@ -1,8 +1,5 @@
 [
-
-{
-
-
+  {
     "id": 1,
     "name": "John Doe",
     "vegetarian": false,
@@ -11,8 +8,6 @@
   },
 
   {
-
-
     "id": 2,
     "name": " Steven Dora",
     "vegetarian": false,
@@ -21,8 +16,6 @@
   },
 
   {
-
-
     "id": 3,
     "name": " Ralph Raginick",
     "vegetarian": true,

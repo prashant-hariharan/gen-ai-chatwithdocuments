@@ -1,26 +1,17 @@
 const express = require('express');
 const routerQuery = express.Router();
 
-
 const {
   generateRAGRetreivalChainWithHistory,
   getVectorStoreAsRetriver,
   answerQuestion,
   answerQuestionWithHistory,
   generateRAGRetreivalChain,
-
-} = require('../utils/vectorutils')
-const {
-  updateChatHistory,
-  getChatHistory,
-} = require('../utils/mongogutils');
-
-
-
+} = require('../utils/vectorutils');
+const { updateChatHistory, getChatHistory } = require('../utils/mongogutils');
 
 const cohereAPIKey = process.env.COHERE_API_KEY;
 const mongoUrl = process.env.MONGO_CONNECTION_STRING;
-
 
 // Prompt
 /**
@@ -96,7 +87,7 @@ routerQuery.post('/prompt', async (req, res) => {
  *                 type: string
  *                 description: Query to be asked to the AI Model
  *                 example: I would like to add different toppings based on your previous suggestion
- *                 
+ *
  *               source:
  *                 type: string
  *                 description: Source of the AI Model.
@@ -128,14 +119,20 @@ routerQuery.post('/prompt-with-history', async (req, res) => {
       'vector_index',
       source
     );
-    const customChatHistory = await getChatHistory(mongoUrl,chatHistoryId);
+    const customChatHistory = await getChatHistory(mongoUrl, chatHistoryId);
 
-  
-    const chain = await generateRAGRetreivalChainWithHistory(cohereAPIKey, retriever);
+    const chain = await generateRAGRetreivalChainWithHistory(
+      cohereAPIKey,
+      retriever
+    );
 
-    const answer = await answerQuestionWithHistory(query, chain,customChatHistory);
-    
-   await updateChatHistory(mongoUrl,customChatHistory );
+    const answer = await answerQuestionWithHistory(
+      query,
+      chain,
+      customChatHistory
+    );
+
+    await updateChatHistory(mongoUrl, customChatHistory);
 
     res.json({ success: true, data: answer });
   } catch (error) {

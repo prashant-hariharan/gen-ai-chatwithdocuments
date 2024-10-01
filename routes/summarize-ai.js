@@ -85,7 +85,7 @@ routerSummary.post(
 
       //1.  Loading & Splitting PDF
       const fileToBeLoaded = `./uploads/${filename}`;
-      const docs = await splitPDF(fileToBeLoaded,10000,250);
+      const docs = await splitPDF(fileToBeLoaded, 10000, 250);
 
       //2.Generate Summary of the document
       const summary = await generateSummary(docs, cohereAPIKey);

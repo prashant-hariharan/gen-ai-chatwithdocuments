@@ -6,7 +6,10 @@ exports.CohereEmbeddings = CohereEmbeddings;
 const { MongoClient } = require('mongodb');
 const { Cohere } = require('@langchain/cohere');
 
-const { ChatPromptTemplate,MessagesPlaceholder } = require('@langchain/core/prompts');
+const {
+  ChatPromptTemplate,
+  MessagesPlaceholder,
+} = require('@langchain/core/prompts');
 const { formatDocumentsAsString } = require('langchain/util/document');
 const {
   RunnablePassthrough,
@@ -14,11 +17,15 @@ const {
 } = require('@langchain/core/runnables');
 const { StringOutputParser } = require('@langchain/core/output_parsers');
 
-const { createHistoryAwareRetriever } = require('langchain/chains/history_aware_retriever');
-const { createStuffDocumentsChain } = require( 'langchain/chains/combine_documents');
-const { createRetrievalChain } = require ('langchain/chains/retrieval');
+const {
+  createHistoryAwareRetriever,
+} = require('langchain/chains/history_aware_retriever');
+const {
+  createStuffDocumentsChain,
+} = require('langchain/chains/combine_documents');
+const { createRetrievalChain } = require('langchain/chains/retrieval');
 
-const { HumanMessage, AIMessage } = require ( "@langchain/core/messages");
+const { HumanMessage, AIMessage } = require('@langchain/core/messages');
 
 async function getVectorStoreAsRetriver(mongoUrl, cohereAPIKey, index, source) {
   //Conencting to mongo db
@@ -85,24 +92,28 @@ async function answerQuestion(question, chain) {
   return answer;
 }
 
-async function answerQuestionWithHistory(question, conversationChain,history,mongoUrl) {
+async function answerQuestionWithHistory(
+  question,
+  conversationChain,
+  history,
+  mongoUrl
+) {
   const chatHistory = [];
-   
+
   history.customHistory.humanMessages.forEach((element) => {
     chatHistory.push(new HumanMessage(element));
   });
   history.customHistory.aiMessages.forEach((element) => {
     chatHistory.push(new AIMessage(element));
   });
- 
 
-  console.log("Question : " , { question });
+  console.log('Question : ', { question });
   // Invoking chain
   let response = await conversationChain.invoke({
     chat_history: chatHistory,
-    input:question,
+    input: question,
   });
-  console.log( response.answer );
+  console.log(response.answer);
   history.customHistory.humanMessages.push(question);
   history.customHistory.aiMessages.push(response.answer);
 
@@ -153,72 +164,62 @@ async function generateRAGRetreivalChain(cohereAPIKey, retriever) {
   return chain;
 }
 
-async function generateRAGRetreivalChainWithHistory(
-  cohereAPIKey,
-  retriever
-) {
-
+async function generateRAGRetreivalChainWithHistory(cohereAPIKey, retriever) {
   const modelCohere = new Cohere({
     maxTokens: 1000,
     apiKey: cohereAPIKey, // In Node.js defaults to process.env.COHERE_API_KEY
   });
 
-
-
   // Create a HistoryAwareRetriever which will be responsible for
-// generating a search query based on both the user input and
-// the chat history
-const retrieverPrompt = ChatPromptTemplate.fromMessages([
-  new MessagesPlaceholder('chat_history'),
-  ['user', '{input}'],
-  [
-    'user',
-    'Given the above conversation, generate a search query to look up in order to get information relevant to the conversation',
-  ],
-]);
+  // generating a search query based on both the user input and
+  // the chat history
+  const retrieverPrompt = ChatPromptTemplate.fromMessages([
+    new MessagesPlaceholder('chat_history'),
+    ['user', '{input}'],
+    [
+      'user',
+      'Given the above conversation, generate a search query to look up in order to get information relevant to the conversation',
+    ],
+  ]);
 
-// This chain will return a list of documents from the vector store
-const retrieverChain = await createHistoryAwareRetriever({
-  llm: modelCohere,
-  retriever,
-  rephrasePrompt: retrieverPrompt,
-});
+  // This chain will return a list of documents from the vector store
+  const retrieverChain = await createHistoryAwareRetriever({
+    llm: modelCohere,
+    retriever,
+    rephrasePrompt: retrieverPrompt,
+  });
 
-const RAG_TEMPLATE = `Use the following pieces of context to answer the question at the end.
+  const RAG_TEMPLATE = `Use the following pieces of context to answer the question at the end.
 If you don't know the answer, just say that you don't know, don't try to make up an answer.
 ----------------
 {context}`;
-//----------------
-// Define the prompt for the final chain
-const RAG_PROMPT = ChatPromptTemplate.fromMessages([
-  ['system', RAG_TEMPLATE],
-  new MessagesPlaceholder('chat_history'),
-  ['user', '{input}'],
-]);
+  //----------------
+  // Define the prompt for the final chain
+  const RAG_PROMPT = ChatPromptTemplate.fromMessages([
+    ['system', RAG_TEMPLATE],
+    new MessagesPlaceholder('chat_history'),
+    ['user', '{input}'],
+  ]);
 
+  const chain = await createStuffDocumentsChain({
+    llm: modelCohere,
+    prompt: RAG_PROMPT,
+  });
 
-const chain = await createStuffDocumentsChain({
-  llm: modelCohere,
-  prompt: RAG_PROMPT,
-});
-
-
-// Create the conversation chain, which will combine the retrieverChain
-// and combineStuffChain in order to get an answer
-const conversationChain = await createRetrievalChain({
-  combineDocsChain: chain,
-  retriever: retrieverChain,
-});
+  // Create the conversation chain, which will combine the retrieverChain
+  // and combineStuffChain in order to get an answer
+  const conversationChain = await createRetrievalChain({
+    combineDocsChain: chain,
+    retriever: retrieverChain,
+  });
 
   return conversationChain;
 }
 
 module.exports = {
-
   getVectorStoreAsRetriver,
   answerQuestion,
   answerQuestionWithHistory,
   generateRAGRetreivalChain,
   generateRAGRetreivalChainWithHistory,
- 
 };
